@@ -66,7 +66,7 @@ class cupsBaseClass(ABC):
             if ctype.kind == "pointer":
                 return ctype.item.cname == ctype_name
             else:
-                return ctype.cname == _ffi.getctype(cls.ffi_name)
+                return ctype.cname == ctype_name
         except:
             return False
 
