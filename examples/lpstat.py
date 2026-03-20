@@ -64,3 +64,28 @@ class Lpstat(_Base):
             print(f" {ptype} {printer_uri_supported or 'none'} {device_uri or 'none'}")
         else:
             print()
+
+    def show_forms(self, name: Optional[str] = None) -> int:
+        if name is None:
+            print("lpstat: form name required after '-f'", flush=True)
+            return 1
+
+        if name:
+            print(f"lpstat: forms are not supported by CUPS (requested: {name})")
+        return 0
+
+    def connect_to_host(self, hostname: Optional[str] = None) -> int:
+        import sys
+        if not hostname:
+            print(
+                'lpstat: Error - expected hostname after "-h" option.',
+                file=sys.stderr,
+            )
+            return 1
+
+        from cups import setServer
+        setServer(hostname)
+        return 0
+
+    def show_long_status(self) -> None:
+        self.list_destinations(long_status=2)
