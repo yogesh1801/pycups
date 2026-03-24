@@ -36,3 +36,56 @@ class Lpstat(_Base):
         else:
             print(f"system default destination: {default_printer.name}")
         return default_printer
+
+  def list_destinations(self, long_status=False):
+    dests = self.conn.getDests()
+
+    for dest in dests:
+        if dest.instance:
+            print(f"{dest.name}/{dest.instance}", end="")
+        else:
+            print(dest.name, end="")
+
+        if long_status:
+            options = dest.options
+            _opt = lambda key: (o := options.get(key)) and o.value or None
+
+            printer_uri_supported = _opt("printer-uri-supported")
+            printer_is_temporary = _opt("printer-is-temporary")
+            device_uri = _opt("device-uri")
+
+            if printer_is_temporary == "true":
+                ptype = "temporary"
+            elif printer_uri_supported:
+                ptype = "permanent"
+            else:
+                ptype = "network"
+
+            print(f" {ptype} {printer_uri_supported or 'none'} {device_uri or 'none'}")
+        else:
+            print()
+
+    def show_forms(self, name: Optional[str] = None) -> int:
+        if name is None:
+            print("lpstat: form name required after '-f'", flush=True)
+            return 1
+
+        if name:
+            print(f"lpstat: forms are not supported by CUPS (requested: {name})")
+        return 0
+
+    def connect_to_host(self, hostname: Optional[str] = None) -> int:
+        import sys
+        if not hostname:
+            print(
+                'lpstat: Error - expected hostname after "-h" option.',
+                file=sys.stderr,
+            )
+            return 1
+
+        from cups import setServer
+        setServer(hostname)
+        return 0
+
+    def show_long_status(self) -> None:
+        self.list_destinations(long_status=2)
